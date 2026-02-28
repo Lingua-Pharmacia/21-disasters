@@ -54,7 +54,9 @@ document.getElementById('btn-enter').onclick = () => { instr.classList.add('hidd
 document.getElementById('btn-back').onclick = () => { location.reload(); };
 
 document.getElementById('btn-bowling').onclick = () => {
-    const fn = audio.src.split('/').pop(); const lesson = lessonData[fn][0];
+    let fn = decodeURIComponent(audio.src.split('/').pop()); 
+    if(!lessonData[fn]) { alert("ERROR: Could not find quiz data for " + fn); return; }
+    const lesson = lessonData[fn][0];
     transcript.classList.add('hidden'); gameZone.classList.remove('hidden'); gameBoard.style.display = "none";
     currentQ = 0; totalScore = 0; attempts = 0;
     runQuiz(lesson);
@@ -63,7 +65,7 @@ document.getElementById('btn-bowling').onclick = () => {
 function runQuiz(lesson) {
     if (currentQ >= 7) { finishQuiz(); return; }
     const qData = lesson.questions[currentQ];
-    const storyNum = parseInt(audio.src.split('/').pop().substring(0,2));
+    const storyNum = parseInt(decodeURIComponent(audio.src.split('/').pop()).substring(0,2));
     
     feedbackArea.innerHTML = `
         <div id="quiz-container">
@@ -92,15 +94,11 @@ function runQuiz(lesson) {
 
     document.getElementById('btn-speak').onclick = function() {
         const btn = this; const status = document.getElementById('mic-status');
-        
         if (window.currentRec) { window.currentRec.abort(); }
-        
         window.currentRec = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
         window.currentRec.lang = 'en-US';
         window.currentRec.interimResults = false;
-
         window.currentRec.onstart = () => { btn.classList.add('active'); status.innerText = "Listening..."; };
-
         window.currentRec.onresult = (e) => {
             document.getElementById('mic-box').classList.add('hidden'); 
             const res = e.results[0][0].transcript.toLowerCase().trim().replace(/[^a-z0-9]/g, "");
@@ -114,7 +112,6 @@ function runQuiz(lesson) {
                 else { showResult(false, "MISS! (0 pts)", qData, lesson, false); }
             }
         };
-
         window.currentRec.onerror = () => { btn.classList.remove('active'); status.innerText = "Error. Try again."; };
         window.currentRec.start();
     };
@@ -142,7 +139,7 @@ function showResult(isCorrect, msg, qData, lesson, canRetry = false) {
 
 function finishQuiz() {
     lifetimeScore += totalScore; localStorage.setItem('disastersScore', lifetimeScore);
-    const fn = audio.src.split('/').pop();
+    const fn = decodeURIComponent(audio.src.split('/').pop());
     if(!completedLessons.includes(fn)) {
         completedLessons.push(fn); localStorage.setItem('completedDisasterLessons', JSON.stringify(completedLessons));
     }
@@ -155,7 +152,10 @@ document.getElementById('ctrl-stop').onclick = () => { audio.pause(); audio.curr
 document.getElementById('btn-blind').onclick = () => { transcript.classList.add('hidden'); gameZone.classList.add('hidden'); audio.play(); };
 
 document.getElementById('btn-read').onclick = () => {
-    const fn = audio.src.split('/').pop(); const data = lessonData[fn][0];
+    let fn = decodeURIComponent(audio.src.split('/').pop()); 
+    if(!lessonData[fn]) { alert("ERROR: Could not find text data for " + fn); return; }
+    
+    const data = lessonData[fn][0];
     transcript.classList.remove('hidden'); gameZone.classList.add('hidden'); transcript.innerHTML = "";
     data.text.split(" ").forEach(w => {
         const span = document.createElement('span'); 
@@ -175,7 +175,10 @@ document.getElementById('btn-read').onclick = () => {
 };
 
 document.getElementById('btn-game').onclick = () => {
-    const fn = audio.src.split('/').pop(); const lesson = lessonData[fn][0];
+    let fn = decodeURIComponent(audio.src.split('/').pop()); 
+    if(!lessonData[fn]) { alert("ERROR: Could not find match data for " + fn); return; }
+
+    const lesson = lessonData[fn][0];
     transcript.classList.add('hidden'); gameZone.classList.remove('hidden'); feedbackArea.innerHTML = "";
     gameBoard.innerHTML = ""; firstCard = null; gameBoard.style.display = "grid";
     let set = [...wordBucket];
