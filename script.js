@@ -53,14 +53,82 @@ document.getElementById('btn-start').onclick = () => { splash.classList.add('hid
 document.getElementById('btn-enter').onclick = () => { instr.classList.add('hidden'); app.classList.remove('hidden'); };
 document.getElementById('btn-back').onclick = () => { location.reload(); };
 
-document.getElementById('btn-bowling').onclick = () => {
+document.getElementById('ctrl-play').onclick = () => audio.play();
+document.getElementById('ctrl-pause').onclick = () => audio.pause();
+document.getElementById('ctrl-stop').onclick = () => { audio.pause(); audio.currentTime = 0; };
+document.getElementById('btn-blind').onclick = () => { transcript.classList.add('hidden'); gameZone.classList.add('hidden'); audio.play(); };
+
+// --- UPGRADED ALARM SYSTEM BUTTONS ---
+
+document.getElementById('btn-read').onclick = () => {
+    if (typeof lessonData === 'undefined') {
+        alert("🚨 FATAL ERROR: Your data.js file did not load!\n\nCheck your GitHub: Is the file named exactly 'data.js' (all lowercase)? If yes, there is a syntax error inside the file.");
+        return;
+    }
+    
     let fn = decodeURIComponent(audio.src.split('/').pop()); 
-    if(!lessonData[fn]) { alert("ERROR: Could not find quiz data for " + fn); return; }
+    if(!lessonData[fn]) { alert("🚨 ERROR: Could not find the text for " + fn + " inside data.js!"); return; }
+    
+    const data = lessonData[fn][0];
+    transcript.classList.remove('hidden'); gameZone.classList.add('hidden'); transcript.innerHTML = "";
+    data.text.split(" ").forEach(w => {
+        const span = document.createElement('span'); 
+        const clean = w.toLowerCase().replace(/[^a-z0-9ğüşöçı]/gi, "");
+        span.innerText = w + " "; span.className = "clickable-word";
+        span.onclick = (e) => {
+            const tr = data.dict[clean];
+            if(tr) {
+                if (!wordBucket.some(p => p.en === clean)) wordBucket.push({en: clean, tr: tr});
+                popup.innerText = tr; popup.style.left = `${e.clientX}px`; popup.style.top = `${e.clientY - 50}px`;
+                popup.classList.remove('hidden'); setTimeout(() => popup.classList.add('hidden'), 2000);
+            }
+        };
+        transcript.appendChild(span);
+    });
+    audio.play();
+};
+
+document.getElementById('btn-game').onclick = () => {
+    if (typeof lessonData === 'undefined') { alert("🚨 ERROR: data.js is missing or broken!"); return; }
+    let fn = decodeURIComponent(audio.src.split('/').pop()); 
+    if(!lessonData[fn]) { alert("🚨 ERROR: Could not find match data for " + fn); return; }
+
+    const lesson = lessonData[fn][0];
+    transcript.classList.add('hidden'); gameZone.classList.remove('hidden'); feedbackArea.innerHTML = "";
+    gameBoard.innerHTML = ""; firstCard = null; gameBoard.style.display = "grid";
+    let set = [...wordBucket];
+    for (let k in lesson.dict) { if (set.length >= 8) break; if (!set.some(p => p.en === k)) set.push({en: k, tr: lesson.dict[k]}); }
+    let deck = [];
+    set.forEach(p => { deck.push({text: p.en, match: p.tr}); deck.push({text: p.tr, match: p.en}); });
+    deck.sort(() => Math.random() - 0.5);
+    deck.forEach(card => {
+        const div = document.createElement('div'); div.className = 'game-card'; div.innerText = card.text;
+        div.onclick = () => {
+            if (div.classList.contains('correct') || div.classList.contains('selected')) return;
+            if (firstCard) {
+                if (firstCard.innerText === card.match) {
+                    div.classList.add('correct'); firstCard.classList.add('correct'); firstCard = null;
+                } else {
+                    div.classList.add('wrong'); setTimeout(() => { div.classList.remove('wrong'); firstCard.classList.remove('selected'); firstCard = null; }, 500);
+                }
+            } else { firstCard = div; div.classList.add('selected'); }
+        };
+        gameBoard.appendChild(div);
+    });
+};
+
+document.getElementById('btn-bowling').onclick = () => {
+    if (typeof lessonData === 'undefined') { alert("🚨 ERROR: data.js is missing or broken!"); return; }
+    let fn = decodeURIComponent(audio.src.split('/').pop()); 
+    if(!lessonData[fn]) { alert("🚨 ERROR: Could not find quiz data for " + fn); return; }
+    
     const lesson = lessonData[fn][0];
     transcript.classList.add('hidden'); gameZone.classList.remove('hidden'); gameBoard.style.display = "none";
     currentQ = 0; totalScore = 0; attempts = 0;
     runQuiz(lesson);
 };
+
+// --- QUIZ LOGIC ---
 
 function runQuiz(lesson) {
     if (currentQ >= 7) { finishQuiz(); return; }
@@ -145,59 +213,3 @@ function finishQuiz() {
     }
     feedbackArea.innerHTML = `<h1 style="color:#ccff00; font-size: 60px;">FINISHED!</h1><h2 style="font-size: 40px;">QUIZ SCORE: ${totalScore}</h2><button onclick="location.reload()" class="action-btn-large">SAVE & RETURN</button>`;
 }
-
-document.getElementById('ctrl-play').onclick = () => audio.play();
-document.getElementById('ctrl-pause').onclick = () => audio.pause();
-document.getElementById('ctrl-stop').onclick = () => { audio.pause(); audio.currentTime = 0; };
-document.getElementById('btn-blind').onclick = () => { transcript.classList.add('hidden'); gameZone.classList.add('hidden'); audio.play(); };
-
-document.getElementById('btn-read').onclick = () => {
-    let fn = decodeURIComponent(audio.src.split('/').pop()); 
-    if(!lessonData[fn]) { alert("ERROR: Could not find text data for " + fn); return; }
-    
-    const data = lessonData[fn][0];
-    transcript.classList.remove('hidden'); gameZone.classList.add('hidden'); transcript.innerHTML = "";
-    data.text.split(" ").forEach(w => {
-        const span = document.createElement('span'); 
-        const clean = w.toLowerCase().replace(/[^a-z0-9ğüşöçı]/gi, "");
-        span.innerText = w + " "; span.className = "clickable-word";
-        span.onclick = (e) => {
-            const tr = data.dict[clean];
-            if(tr) {
-                if (!wordBucket.some(p => p.en === clean)) wordBucket.push({en: clean, tr: tr});
-                popup.innerText = tr; popup.style.left = `${e.clientX}px`; popup.style.top = `${e.clientY - 50}px`;
-                popup.classList.remove('hidden'); setTimeout(() => popup.classList.add('hidden'), 2000);
-            }
-        };
-        transcript.appendChild(span);
-    });
-    audio.play();
-};
-
-document.getElementById('btn-game').onclick = () => {
-    let fn = decodeURIComponent(audio.src.split('/').pop()); 
-    if(!lessonData[fn]) { alert("ERROR: Could not find match data for " + fn); return; }
-
-    const lesson = lessonData[fn][0];
-    transcript.classList.add('hidden'); gameZone.classList.remove('hidden'); feedbackArea.innerHTML = "";
-    gameBoard.innerHTML = ""; firstCard = null; gameBoard.style.display = "grid";
-    let set = [...wordBucket];
-    for (let k in lesson.dict) { if (set.length >= 8) break; if (!set.some(p => p.en === k)) set.push({en: k, tr: lesson.dict[k]}); }
-    let deck = [];
-    set.forEach(p => { deck.push({text: p.en, match: p.tr}); deck.push({text: p.tr, match: p.en}); });
-    deck.sort(() => Math.random() - 0.5);
-    deck.forEach(card => {
-        const div = document.createElement('div'); div.className = 'game-card'; div.innerText = card.text;
-        div.onclick = () => {
-            if (div.classList.contains('correct') || div.classList.contains('selected')) return;
-            if (firstCard) {
-                if (firstCard.innerText === card.match) {
-                    div.classList.add('correct'); firstCard.classList.add('correct'); firstCard = null;
-                } else {
-                    div.classList.add('wrong'); setTimeout(() => { div.classList.remove('wrong'); firstCard.classList.remove('selected'); firstCard = null; }, 500);
-                }
-            } else { firstCard = div; div.classList.add('selected'); }
-        };
-        gameBoard.appendChild(div);
-    });
-};
