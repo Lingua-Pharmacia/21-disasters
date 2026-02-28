@@ -5,36 +5,36 @@ const splash = document.getElementById('splash-screen'), instr = document.getEle
       gameZone = document.getElementById('game-zone'), gameBoard = document.getElementById('game-board'),
       feedbackArea = document.getElementById('quiz-feedback-area'), ptsVal = document.getElementById('points-val');
 
-// PERSISTENCE (Specific to Survivals)
-let lifetimeScore = parseInt(localStorage.getItem('survivalScore')) || 0;
-let completedLessons = JSON.parse(localStorage.getItem('completedSurvivalLessons')) || [];
+// PERSISTENCE (Specific to Disasters)
+let lifetimeScore = parseInt(localStorage.getItem('disastersScore')) || 0;
+let completedLessons = JSON.parse(localStorage.getItem('completedDisasterLessons')) || [];
 if(ptsVal) ptsVal.innerText = lifetimeScore;
 
 let wordBucket = []; let currentQ = 0; let attempts = 0; let totalScore = 0; let firstCard = null;
 
 // STATIONS 
 const stations = [
-    {file:"01_TheAshCloud.mp3", title:"The Ash Cloud"},
-    {file:"02_TheBigWave.mp3", title:"The Big Wave"},
-    {file:"03_TheDeepDark.mp3", title:"The Deep Dark"},
-    {file:"04_TheDrySun.mp3", title:"The Dry Sun"},
-    {file:"05_TheFallenCity.mp3", title:"The Fallen City"},
-    {file:"06_TheFrozenIsland.mp3", title:"The Frozen Island"},
-    {file:"07_TheGreatBear.mp3", title:"The Great Bear"},
-    {file:"08_TheHighWater.mp3", title:"The High Water"},
-    {file:"09_TheIcePocket.mp3", title:"The Ice Pocket"},
-    {file:"10_TheLastOneLeft.mp3", title:"The Last One Left"},
-    {file:"11_TheLonelyIsland.mp3", title:"The Lonely Island"},
-    {file:"12_TheRedDirt.mp3", title:"The Red Dirt"},
-    {file:"13_TheRisingWater.mp3", title:"The Rising Water"},
-    {file:"14_TheRiverPath.mp3", title:"The River Path"},
-    {file:"15_TheSafariGuide.mp3", title:"The Safari Guide"},
-    {file:"16_TheSandstormRunner.mp3", title:"The Sandstorm Runner"},
-    {file:"17_TheSnowTrap.mp3", title:"The Snow Trap"},
-    {file:"18_TheStoneGrip.mp3", title:"The Stone Grip"},
-    {file:"19_TheVoid.mp3", title:"The Void"},
-    {file:"20_TheWallOfFire.mp3", title:"The Wall Of Fire"},
-    {file:"21_TheWhiteSilence.mp3", title:"The White Silence"}
+    {file:"01_AberfanDisaster.mp3", title:"Aberfan Disaster"},
+    {file:"02_AndesFlightDisaster.mp3", title:"Andes Flight Disaster"},
+    {file:"03_BanqiaoDamFailure.mp3", title:"Banqiao Dam Failure"},
+    {file:"04_BhopalGasTragedy.mp3", title:"Bhopal Gas Tragedy"},
+    {file:"05_ChernobylDisaster.mp3", title:"Chernobyl Disaster"},
+    {file:"06_CostaConcordiaSinking.mp3", title:"Costa Concordia Sinking"},
+    {file:"07_DeepwaterHorizonExplosion.mp3", title:"Deepwater Horizon Explosion"},
+    {file:"08_DonaPazFerryCollision.mp3", title:"Doña Paz Ferry Collision"},
+    {file:"09_HalifaxExplosion.mp3", title:"Halifax Explosion"},
+    {file:"10_HindenburgDisaster.mp3", title:"Hindenburg Disaster"},
+    {file:"11_HyattRegencyCollapse.mp3", title:"Hyatt Regency Walkway Collapse"},
+    {file:"12_JALFlight123.mp3", title:"JAL Flight 123 Crash"},
+    {file:"13_JohnstownFlood.mp3", title:"Johnstown Flood"},
+    {file:"14_MVLeJoolaSinking.mp3", title:"MV Le Joola Sinking"},
+    {file:"15_MountErebusDisaster.mp3", title:"Mount Erebus Disaster"},
+    {file:"16_PiperAlphaExplosion.mp3", title:"Piper Alpha Explosion"},
+    {file:"17_RanaPlazaCollapse.mp3", title:"Rana Plaza Collapse"},
+    {file:"18_StFrancisDamFailure.mp3", title:"St. Francis Dam Failure"},
+    {file:"19_TenerifeAirportCollision.mp3", title:"Tenerife Airport Collision"},
+    {file:"20_TitanicSinking.mp3", title:"Titanic Sinking"},
+    {file:"21_UfaTrainDisaster.mp3", title:"Ufa Train Disaster"}
 ];
 
 stations.forEach((s, i) => {
@@ -141,10 +141,10 @@ function showResult(isCorrect, msg, qData, lesson, canRetry = false) {
 }
 
 function finishQuiz() {
-    lifetimeScore += totalScore; localStorage.setItem('survivalScore', lifetimeScore);
+    lifetimeScore += totalScore; localStorage.setItem('disastersScore', lifetimeScore);
     const fn = audio.src.split('/').pop();
     if(!completedLessons.includes(fn)) {
-        completedLessons.push(fn); localStorage.setItem('completedSurvivalLessons', JSON.stringify(completedLessons));
+        completedLessons.push(fn); localStorage.setItem('completedDisasterLessons', JSON.stringify(completedLessons));
     }
     feedbackArea.innerHTML = `<h1 style="color:#ccff00; font-size: 60px;">FINISHED!</h1><h2 style="font-size: 40px;">QUIZ SCORE: ${totalScore}</h2><button onclick="location.reload()" class="action-btn-large">SAVE & RETURN</button>`;
 }
